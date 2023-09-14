@@ -19,10 +19,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $ez = new EZQuery();
 
     // Insert new user if it doesn't exist
-    $rowAffected = $ez->executeEdit("INSERT INTO users (id) VALUES ('$id') ON DUPLICATE KEY UPDATE id = '$id'");
+    $rowsAffected = $ez->executeEdit("INSERT INTO users (id) VALUES ('$id') ON DUPLICATE KEY UPDATE id = '$id'");
 
     /* ------------------------------ Response ------------------------------ */
-    switch ($rowAffected) {
+    switch ($rowsAffected) {
         case 0: // Already exists
             http_response_code(200);  // OK
             break;
