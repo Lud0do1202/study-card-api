@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $ez = new EZQuery();
 
     // Get all topics from user
-    $topics = $ez->executeSelect("SELECT id, topic, theme FROM topics WHERE id_user = '$userID'");
+    $topics = $ez->executeSelect("SELECT id, topic, theme FROM topics WHERE id_user = ?", $userID);
 
     /* ------------------------------ Response ------------------------------ */
     http_response_code(200);  // OK
@@ -56,7 +56,7 @@ else if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $ez = new EZQuery();
 
     // Insert new user if it doesn't exist
-    $rowsAffected = $ez->executeEdit("INSERT INTO topics (id_user, topic, theme) VALUES ('$userID', '$topic', '$theme')");
+    $rowsAffected = $ez->executeEdit("INSERT INTO topics (id_user, topic, theme) VALUES (?, ?, ?)", $userID, $topic, $theme);
 
     /* ------------------------------ Response ------------------------------ */
     switch ($rowsAffected) {
@@ -102,7 +102,7 @@ else if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     $ez = new EZQuery();
 
     // Insert new user if it doesn't exist
-    $rowsAffected = $ez->executeEdit("UPDATE topics SET topic = '$topic', theme = '$theme' WHERE id = '$id'");
+    $rowsAffected = $ez->executeEdit("UPDATE topics SET topic = ?, theme = ? WHERE id = ?", $topic, $theme, $id);
 
     /* ------------------------------ Response ------------------------------ */
     switch ($rowsAffected) {
@@ -142,7 +142,7 @@ else if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
     $ez = new EZQuery();
 
     // Insert new user if it doesn't exist
-    $rowsAffected = $ez->executeEdit("DELETE FROM topics WHERE id = '$id'");
+    $rowsAffected = $ez->executeEdit("DELETE FROM topics WHERE id = ?", $id);
 
     /* ------------------------------ Response ------------------------------ */
     switch ($rowsAffected) {
