@@ -154,7 +154,10 @@ else if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
     /* ------------------------------- EZQuery ------------------------------ */
     $ez = new EZQuery();
 
-    // Insert new user if it doesn't exist
+    // Delete cards from topic
+    $ez->executeEdit("DELETE FROM cards WHERE id_topic = ?", $topicID);
+
+    // Delete topic
     $rowsAffected = $ez->executeEdit("DELETE FROM topics WHERE id = ?", $topicID);
 
     /* ------------------------------ Response ------------------------------ */
