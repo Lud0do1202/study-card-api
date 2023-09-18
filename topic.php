@@ -49,8 +49,14 @@ else if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     /* ------------------------------ Get Topic ----------------------------- */
     $data = json_decode(file_get_contents("php://input"));
-    $topic = $data->topic->topic;
-    $theme = $data->topic->theme;
+    $topic = $data->topic->topic ?? null;
+    $theme = $data->topic->theme ?? null;
+
+    /* ----------------------------- Bad Request ---------------------------- */
+    if (is_null($topic) || is_null($theme)) {
+        http_response_code(400);
+        exit;
+    }
 
     /* ------------------------------- EZQuery ------------------------------ */
     $ez = new EZQuery();
@@ -94,23 +100,27 @@ else if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
 
     /* ------------------------------ Get Topic ----------------------------- */
     $data = json_decode(file_get_contents("php://input"));
-    $id = $data->topic->id;
-    $topic = $data->topic->topic;
-    $theme = $data->topic->theme;
+    $topicID = $data->topic->id ?? null;
+    $topic = $data->topic->topic ?? null;
+    $theme = $data->topic->theme ?? null;
+
+    /* ----------------------------- Bad Request ---------------------------- */
+    if (is_null($topicID) || is_null($topic) || is_null($theme)) {
+        http_response_code(400);
+        exit;
+    }
 
     /* ------------------------------- EZQuery ------------------------------ */
     $ez = new EZQuery();
 
-    // Insert new user if it doesn't exist
-    $rowsAffected = $ez->executeEdit("UPDATE topics SET topic = ?, theme = ? WHERE id = ?", $topic, $theme, $id);
+    // Insert a new topics
+    $rowsAffected = $ez->executeEdit("UPDATE topics SET topic = ?, theme = ? WHERE id = ?", $topic, $theme, $topicID);
 
     /* ------------------------------ Response ------------------------------ */
     switch ($rowsAffected) {
         case 0: // Nothing updated
         case 1: // SUCCESS
             http_response_code(200);
-            header('Content-Type: application/json');
-            echo json_encode($data->topic);
             exit;
 
         default: // Unknow error
@@ -133,16 +143,19 @@ else if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
     }
 
     /* ------------------------------ Get Topic ----------------------------- */
-    $data = json_decode(file_get_contents("php://input"));
-    $id = $data->topic->id;
-    $topic = $data->topic->topic;
-    $theme = $data->topic->theme;
+    $topicID = $_GET['topicID'] ?? null;
+
+    /* ----------------------------- Bad Request ---------------------------- */
+    if ($topicID === null) {
+        http_response_code(400);
+        exit;
+    }
 
     /* ------------------------------- EZQuery ------------------------------ */
     $ez = new EZQuery();
 
     // Insert new user if it doesn't exist
-    $rowsAffected = $ez->executeEdit("DELETE FROM topics WHERE id = ?", $id);
+    $rowsAffected = $ez->executeEdit("DELETE FROM topics WHERE id = ?", $topicID);
 
     /* ------------------------------ Response ------------------------------ */
     switch ($rowsAffected) {
@@ -152,8 +165,6 @@ else if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
 
         case 1: // SUCCESS
             http_response_code(200);
-            header('Content-Type: application/json');
-            echo json_encode($data->topic);
             exit;
 
         default: // Unknow error

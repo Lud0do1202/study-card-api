@@ -4,8 +4,8 @@ require_once './lib/EZQuezy/EZQuery.php';
 
 /* ----------------------------- Access-Control ----------------------------- */
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST');
-header('Access-Control-Allow-Headers: X-User-ID, X-Topic-ID, Content-Type');
+header('Access-Control-Allow-Methods: GET, POST, DELETE');
+header('Access-Control-Allow-Headers: X-User-ID, Content-Type');
 
 /* ========================================================================== */
 /*                                     GET                                    */
@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     }
 
     /* ---------------------------- Get Topic ID ---------------------------- */
-    $topicID = $_SERVER['HTTP_X_TOPIC_ID'] ?? null;
+    $topicID = $_GET['topicID'] ?? null;
 
     /* ----------------------------- Bad Request ---------------------------- */
     if ($topicID === null) {
@@ -55,17 +55,9 @@ else if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    /* ---------------------------- Get Topic ID ---------------------------- */
-    $topicID = $_SERVER['HTTP_X_TOPIC_ID'] ?? null;
-
-    /* ----------------------------- Bad Request ---------------------------- */
-    if ($topicID === null) {
-        http_response_code(400);
-        exit;
-    }
-
     /* ------------------------------ Get Topic ----------------------------- */
     $data = json_decode(file_get_contents("php://input"));
+    $topicID = $data->card->id_topic;
     $question = $data->card->question;
     $answer = $data->card->answer;
 
@@ -88,6 +80,50 @@ else if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             http_response_code(200);
             header('Content-Type: application/json');
             echo json_encode($data->card);
+            exit;
+
+        default: // Unknow error
+            http_response_code(520);
+            exit;
+    }
+}
+
+/* ========================================================================== */
+/*                                   DELETE                                   */
+/* ========================================================================== */ //
+else if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
+    /* ----------------------------- Get User ID ---------------------------- */
+    $userID = $_SERVER['HTTP_X_USER_ID'] ?? null;
+
+    /* ------------------------------ Forbidden ----------------------------- */
+    if ($userID === null) {
+        http_response_code(403);
+        exit;
+    }
+
+    /* ------------------------------ Get Topic ----------------------------- */
+    $cardID = $_GET['cardID'] ?? null;
+
+    /* ----------------------------- Bad Request ---------------------------- */
+    if ($cardID === null) {
+        http_response_code(400);
+        exit;
+    }
+
+    /* ------------------------------- EZQuery ------------------------------ */
+    $ez = new EZQuery();
+
+    // Insert new user if it doesn't exist
+    $rowsAffected = $ez->executeEdit("DELETE FROM cards WHERE id = ?", $cardID);
+
+    /* ------------------------------ Response ------------------------------ */
+    switch ($rowsAffected) {
+        case 0: // Not Found
+            http_response_code(404);
+            exit;
+
+        case 1: // SUCCESS
+            http_response_code(200);
             exit;
 
         default: // Unknow error
