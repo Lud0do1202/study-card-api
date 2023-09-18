@@ -4,7 +4,7 @@ require_once './lib/EZQuezy/EZQuery.php';
 
 /* ----------------------------- Access-Control ----------------------------- */
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, DELETE');
+header('Access-Control-Allow-Methods: GET, POST, DELETE, PUT');
 header('Access-Control-Allow-Headers: X-User-ID, Content-Type');
 
 /* ========================================================================== */
@@ -57,9 +57,15 @@ else if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     /* ------------------------------ Get Topic ----------------------------- */
     $data = json_decode(file_get_contents("php://input"));
-    $topicID = $data->card->id_topic;
-    $question = $data->card->question;
-    $answer = $data->card->answer;
+    $topicID = $data->card->id_topic ?? null;
+    $question = $data->card->question ?? null;
+    $answer = $data->card->answer ?? null;
+
+    /* ----------------------------- Bad Request ---------------------------- */
+    if (is_null($topicID) || is_null($question) || is_null($answer)) {
+        http_response_code(400);
+        exit;
+    }
 
     /* ------------------------------- EZQuery ------------------------------ */
     $ez = new EZQuery();
@@ -80,6 +86,50 @@ else if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             http_response_code(200);
             header('Content-Type: application/json');
             echo json_encode($data->card);
+            exit;
+
+        default: // Unknow error
+            http_response_code(520);
+            exit;
+    }
+}
+
+/* ========================================================================== */
+/*                                     PUT                                    */
+/* ========================================================================== */ //
+else if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
+    /* ----------------------------- Get User ID ---------------------------- */
+    $userID = $_SERVER['HTTP_X_USER_ID'] ?? null;
+
+    /* ------------------------------ Forbidden ----------------------------- */
+    if ($userID === null) {
+        http_response_code(403);
+        exit;
+    }
+
+    /* ------------------------------ Get Topic ----------------------------- */
+    $data = json_decode(file_get_contents("php://input"));
+    $cardID = $data->card->id ?? null;
+    $question = $data->card->question ?? null;
+    $answer = $data->card->answer ?? null;
+
+    /* ----------------------------- Bad Request ---------------------------- */
+    if (is_null($cardID) || is_null($question) || is_null($answer)) {
+        http_response_code(400);
+        exit;
+    }
+
+    /* ------------------------------- EZQuery ------------------------------ */
+    $ez = new EZQuery();
+
+    // Insert a new topics
+    $rowsAffected = $ez->executeEdit("UPDATE cards SET question = ?, answer = ? WHERE id = ?", $question, $answer, $cardID);
+
+    /* ------------------------------ Response ------------------------------ */
+    switch ($rowsAffected) {
+        case 0: // Nothing updated
+        case 1: // SUCCESS
+            http_response_code(200);
             exit;
 
         default: // Unknow error
