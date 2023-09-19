@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $ez = new EZQuery();
 
     // Get all cards from id_topic
-    $cards = $ez->executeSelect("SELECT id, id_topic, question, answer FROM cards WHERE id_topic = ?", $topicID);
+    $cards = $ez->executeSelect("SELECT id, id_topic, question, answer FROM cards WHERE id_topic = ? ORDER BY id ASC", $topicID);
 
     /* ------------------------------ Response ------------------------------ */
     http_response_code(200);  // OK

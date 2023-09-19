@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $ez = new EZQuery();
 
     // Get all topics from user
-    $topics = $ez->executeSelect("SELECT id, topic, theme FROM topics WHERE id_user = ?", $userID);
+    $topics = $ez->executeSelect("SELECT id, topic, theme FROM topics WHERE id_user = ? ORDER BY topic ASC", $userID);
 
     /* ------------------------------ Response ------------------------------ */
     http_response_code(200);  // OK
