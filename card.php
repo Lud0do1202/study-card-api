@@ -32,6 +32,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     /* ------------------------------- EZQuery ------------------------------ */
     $ez = new EZQuery();
 
+    // Check topics own
+    $own = $ez->executeSelect("SELECT id FROM topics WHERE id = ? AND id_user = ?", $topicID, $userID);
+    if (empty($own)) {
+        http_response_code(403); // Forbidden
+        exit;
+    }
+
     // Get all cards from id_topic
     $cards = $ez->executeSelect("SELECT id, id_topic, question, answer FROM cards WHERE id_topic = ? ORDER BY id ASC", $topicID);
 
@@ -69,6 +76,13 @@ else if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     /* ------------------------------- EZQuery ------------------------------ */
     $ez = new EZQuery();
+
+    // Check topics own
+    $own = $ez->executeSelect("SELECT id FROM topics WHERE id = ? AND id_user = ?", $topicID, $userID);
+    if (empty($own)) {
+        http_response_code(403); // Forbidden
+        exit;
+    }
 
     // Insert new cards
     $rowsAffected = $ez->executeEdit("INSERT INTO cards (id_topic, question, answer) VALUES (?, ?, ?)", $topicID, $question, $answer);
@@ -122,6 +136,13 @@ else if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     /* ------------------------------- EZQuery ------------------------------ */
     $ez = new EZQuery();
 
+    // Check cards own
+    $own = $ez->executeSelect("SELECT id FROM topics WHERE id = (SELECT id_topic FROM cards WHERE id = ?) AND id_user = ?", $cardID, $userID);
+    if (empty($own)) {
+        http_response_code(403); // Forbidden
+        exit;
+    }
+
     // Insert a new topics
     $rowsAffected = $ez->executeEdit("UPDATE cards SET question = ?, answer = ? WHERE id = ?", $question, $answer, $cardID);
 
@@ -162,6 +183,13 @@ else if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
 
     /* ------------------------------- EZQuery ------------------------------ */
     $ez = new EZQuery();
+
+    // Check cards own
+    $own = $ez->executeSelect("SELECT id FROM topics WHERE id = (SELECT id_topic FROM cards WHERE id = ?) AND id_user = ?", $cardID, $userID);
+    if (empty($own)) {
+        http_response_code(403); // Forbidden
+        exit;
+    }
 
     // Insert new user if it doesn't exist
     $rowsAffected = $ez->executeEdit("DELETE FROM cards WHERE id = ?", $cardID);

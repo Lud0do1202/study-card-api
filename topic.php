@@ -113,6 +113,13 @@ else if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     /* ------------------------------- EZQuery ------------------------------ */
     $ez = new EZQuery();
 
+    // Check topics own
+    $own = $ez->executeSelect("SELECT id FROM topics WHERE id = ? AND id_user = ?", $topicID, $userID);
+    if (empty($own)) {
+        http_response_code(403); // Forbidden
+        exit;
+    }
+
     // Insert a new topics
     $rowsAffected = $ez->executeEdit("UPDATE topics SET topic = ?, theme = ? WHERE id = ?", $topic, $theme, $topicID);
 
@@ -153,6 +160,13 @@ else if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
 
     /* ------------------------------- EZQuery ------------------------------ */
     $ez = new EZQuery();
+
+    // Check topics own
+    $own = $ez->executeSelect("SELECT id FROM topics WHERE id = ? AND id_user = ?", $topicID, $userID);
+    if (empty($own)) {
+        http_response_code(403); // Forbidden
+        exit;
+    }
 
     // Delete cards from topic
     $ez->executeEdit("DELETE FROM cards WHERE id_topic = ?", $topicID);
